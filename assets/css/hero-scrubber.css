@@ -1,0 +1,557 @@
+/* ==========================================================================
+   HERO CANVAS PRELOADER & SCROLL-SCRUBBING PIPELINE
+   Optimized for 4K Luxury Tour Smooth GPU Canvas Engine
+   ========================================================================== */
+
+/* Lenis Smooth Scroll Configuration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Outer scroll track: 1400vh generous runway for ultra-slow, natural, cinematic pacing */
+.section-hero.scrub-track {
+  position: relative;
+  height: 1400vh;
+  min-height: 1400vh;
+  margin: 0;
+  padding: 0;
+  background-color: #06080c;
+  display: block;
+}
+
+/* Pinned 100vh viewport */
+.hero-sticky-frame {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  z-index: 1;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Canvas background container (Pure visuals - zero overlays) */
+.hero-canvas-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #06080c;
+  transform: translateZ(0);
+}
+
+#heroScrubCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  object-fit: cover;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Fallback / initial poster image */
+.hero-fallback-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* Content layer holding centered hero typography (smooth flow-out animation on scroll) */
+.hero-content-layer {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 24px;
+  text-align: center;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: 
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s ease;
+  will-change: opacity, transform, filter;
+}
+
+.hero-wrap,
+.hero-top-wrap,
+.hero-content-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center !important;
+  text-align: center !important;
+  width: 100%;
+  margin: 0 auto !important;
+}
+
+.hero-heading {
+  text-align: center !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: clamp(38px, 5.2vw, 74px) !important;
+  font-weight: 600 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.03em !important;
+  color: #ffffff !important;
+  margin: 0 auto 1.25rem auto !important;
+  max-width: 860px !important;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 4px 14px rgba(0, 0, 0, 0.75),
+    0 8px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+.hero-subtext {
+  text-align: center !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: clamp(15px, 1.4vw, 19px) !important;
+  font-weight: 400 !important;
+  line-height: 1.65 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  margin: 0 auto !important;
+  max-width: 680px !important;
+  text-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 3px 12px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ==========================================================================
+   ULTRA-LIGHT LOCALIZED BOTTOM-LEFT SCRIM & DYNAMIC SCENE BEATS
+   ========================================================================== */
+.hero-bottom-left-scrim {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 52vw;
+  height: 42vh;
+  max-width: 700px;
+  max-height: 440px;
+  background: radial-gradient(ellipse at 0% 100%, rgba(5, 7, 10, 0.35) 0%, rgba(5, 7, 10, 0.12) 42%, transparent 75%);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.hero-bottom-left-scrim.is-visible {
+  opacity: 1;
+}
+
+/* Bottom-Left Scene Beat HUD */
+.hero-scene-beat {
+  position: absolute;
+  bottom: 44px;
+  left: 44px;
+  z-index: 15;
+  max-width: 440px;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-scene-beat.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scene-beat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c8aa76;
+  background: rgba(10, 14, 22, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 170, 118, 0.35);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.scene-beat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #c8aa76;
+  box-shadow: 0 0 8px #c8aa76;
+}
+
+.scene-beat-title {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.9),
+    0 4px 18px rgba(0, 0, 0, 0.7);
+}
+
+.scene-beat-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(240, 244, 248, 0.9);
+  margin: 0;
+  text-shadow: 
+    0 1px 4px rgba(0, 0, 0, 0.9),
+    0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Zero-Preloader Performance Architecture: Instant Paint, No Loading Screen */
+.hero-scrub-preloader {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Suppress Webflow Brand Badge */
+.w-webflow-badge {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Mobile Adjustments */
+@media screen and (max-width: 767px) {
+  .section-hero.scrub-track {
+    height: 800vh;
+    min-height: 800vh;
+  }
+  .preloader-card {
+    padding: 1.75rem 1.25rem;
+  }
+  .preloader-progress-val {
+    font-size: 2.25rem;
+  }
+}
+
+/* ==========================================================================
+   ULTRA-SLIM, THIN & MINIMAL SITE HEADER
+   ========================================================================== */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  box-sizing: border-box;
+  transition: 
+    background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    -webkit-backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    padding 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: background, backdrop-filter, padding;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0.65rem 2.5rem;
+  box-sizing: border-box;
+  transition: padding 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Left Brand Logo - Slim & Refined */
+.header-left {
+  display: flex;
+  align-items: center;
+  flex: 0 0 180px;
+}
+
+.header-brand-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.header-logo-img {
+  height: 19px;
+  width: auto;
+  display: block;
+  transition: filter 0.3s ease, opacity 0.3s ease, transform 0.25s ease;
+}
+
+.header-brand-link:hover .header-logo-img {
+  transform: scale(1.02);
+}
+
+/* Centered Navigation Links - Minimal & Clean */
+.header-center-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-nav-list {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.header-nav-item {
+  margin: 0;
+  padding: 0;
+}
+
+.header-nav-link {
+  display: inline-block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  position: relative;
+  padding: 0.2rem 0.1rem;
+  line-height: 1.2;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.header-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Right "Contact Us" Button - Slim Pill */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 180px;
+}
+
+.header-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.015em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.contact-btn-arrow {
+  width: 10px;
+  height: 10px;
+  transition: transform 0.2s ease;
+}
+
+.header-contact-btn:hover .contact-btn-arrow {
+  transform: translateX(2px);
+}
+
+/* ==========================================================================
+   STATE 1: OVER HERO (Completely Transparent, Invisible Background, Pure Minimalism)
+   ========================================================================== */
+.site-header.is-hero-transparent {
+  background: rgba(8, 10, 15, 0.36);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.26);
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.36);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.site-header.is-hero-transparent .header-container {
+  padding: 0.75rem 2.5rem;
+}
+
+.site-header.is-hero-transparent .header-logo-img {
+  filter: brightness(0) invert(1);
+  opacity: 0.98;
+}
+
+.site-header.is-hero-transparent .header-nav-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.site-header.is-hero-transparent .header-nav-link:hover {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.site-header.is-hero-transparent .header-contact-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.site-header.is-hero-transparent .header-contact-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   STATE 1.5: SCROLLING IN HERO (Completely Disappeared to Focus Solely on Visuals)
+   ========================================================================== */
+.site-header.is-hero-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-12px) !important;
+  transition: 
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.35s ease !important;
+}
+
+/* ==========================================================================
+   STATE 2: AFTER HERO SECTION (Slim, Clean Frorolled Glass for Rest of Site)
+   ========================================================================== */
+.site-header.is-scrolled-header {
+  background: rgba(7, 9, 14, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.45);
+}
+
+.site-header.is-scrolled-header .header-container {
+  padding: 0.55rem 2.5rem;
+}
+
+.site-header.is-scrolled-header .header-logo-img {
+  filter: brightness(0) invert(1);
+  opacity: 0.98;
+}
+
+.site-header.is-scrolled-header .header-nav-link {
+  color: rgba(245, 247, 250, 0.88);
+  text-shadow: none;
+}
+
+.site-header.is-scrolled-header .header-nav-link:hover {
+  color: #c8aa76;
+}
+
+.site-header.is-scrolled-header .header-contact-btn {
+  background: #c8aa76;
+  border: 1px solid #c8aa76;
+  color: #07090e;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(200, 170, 118, 0.25);
+}
+
+.site-header.is-scrolled-header .header-contact-btn:hover {
+  background: #e6cb99;
+  border-color: #e6cb99;
+  transform: translateY(-1px);
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 991px) {
+  .header-container {
+    padding: 0.55rem 1.5rem !important;
+  }
+  .header-left, .header-right {
+    flex: 0 0 auto;
+  }
+  .header-nav-list {
+    gap: 1.25rem;
+  }
+  .header-nav-link {
+    font-size: 0.76rem;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .header-center-nav {
+    display: none;
+  }
+  .header-container {
+    padding: 0.5rem 1rem !important;
+  }
+  .header-contact-btn {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.74rem;
+  }
+}
+

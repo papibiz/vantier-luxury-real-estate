@@ -1,0 +1,11 @@
+{
+  "name": "kizuna-real-estate-clone",
+  "version": "1.0.0",
+  "description": "Pixel-perfect clone of the Kizuna Webflow Real Estate Website Template",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "author": "",
+  "license": "ISC"
+}

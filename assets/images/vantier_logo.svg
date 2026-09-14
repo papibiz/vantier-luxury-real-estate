@@ -1,0 +1,29 @@
+<svg width="158" height="28" viewBox="0 0 158 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Minimal Architectural Diamond / V Emblem -->
+  <g transform="translate(1, 2)">
+    <path d="M12 0L24 12L12 24L0 12L12 0Z" fill="#111827" fill-opacity="0.07"/>
+    <path d="M12 2.2L21.8 12L12 21.8L2.2 12L12 2.2Z" stroke="#111827" stroke-width="1.1"/>
+    <path d="M7.2 7.8L12 17.2L16.8 7.8" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- VANTIER Pure Vector Luxury Wordmark -->
+  <g fill="#111827">
+    <!-- V -->
+    <path d="M33 5.2H35.4L40.2 16.8H40.4L45.2 5.2H47.6L41.4 19H39.2L33 5.2Z"/>
+    <!-- A -->
+    <path d="M50.5 19L56 5.2H58.4L63.9 19H61.4L60.1 15.6H54.3L53 19H50.5ZM55 13.7H59.4L57.2 8.1L55 13.7Z"/>
+    <!-- N -->
+    <path d="M67.5 19V5.2H69.7L76.5 16.2H76.7V5.2H78.9V19H76.7L69.9 8V19H67.5Z"/>
+    <!-- T -->
+    <path d="M82.2 7.1V5.2H92.2V7.1H88.3V19H86.1V7.1H82.2Z"/>
+    <!-- I -->
+    <path d="M95.5 19V5.2H97.7V19H95.5Z"/>
+    <!-- E -->
+    <path d="M101.5 19V5.2H109.8V7.1H103.7V11H109.2V12.9H103.7V17.1H110V19H101.5Z"/>
+    <!-- R -->
+    <path d="M113.5 19V5.2H119.5C122.2 5.2 123.8 6.6 123.8 8.8C123.8 10.6 122.5 11.8 120.6 12.2L124.2 19H121.6L118.2 12.6H115.7V19H113.5ZM115.7 10.7H119.2C120.8 10.7 121.6 9.9 121.6 8.8C121.6 7.6 120.7 7.1 119.2 7.1H115.7V10.7Z"/>
+  </g>
+
+  <!-- Subline: LUXURY REAL ESTATE -->
+  <text x="33.5" y="25" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="4.8" font-weight="600" letter-spacing="0.32em" fill="#111827" opacity="0.65">LUXURY REAL ESTATE</text>
+</svg>
